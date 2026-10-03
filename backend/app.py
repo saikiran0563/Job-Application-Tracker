@@ -2,6 +2,7 @@ from flask import Flask, jsonify
 
 from config import Config
 from extensions import db, cors, jwt
+from models import JobApplication
 
 
 def create_app():
@@ -14,6 +15,10 @@ def create_app():
     db.init_app(app)
     cors.init_app(app)
     jwt.init_app(app)
+    
+    # Create database tables
+    with app.app_context():
+        db.create_all()
 
     # Health check endpoint
     @app.get("/api/health")
