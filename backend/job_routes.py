@@ -11,6 +11,18 @@ def get_jobs():
     status = request.args.get("status")
     search = request.args.get("search")
 
+    page = request.args.get("page", 1, type=int)
+    per_page = request.args.get("per_page", 10, type=int)
+
+    if page < 1:
+        page = 1
+
+    if per_page < 1:
+        per_page = 10
+
+    if per_page > 100:
+        per_page = 100
+
     query = JobApplication.query
 
     if status:
@@ -26,14 +38,28 @@ def get_jobs():
             )
         )
 
-    jobs = query.order_by(
+    pagination = query.order_by(
         JobApplication.application_date.desc()
-    ).all()
+    ).paginate(
+        page=page,
+        per_page=per_page,
+        error_out=False
+    )
 
-    return jsonify([
-        job.to_dict()
-        for job in jobs
-    ]), 200
+    return jsonify({
+        "jobs": [
+            job.to_dict()
+            for job in pagination.items
+        ],
+        "pagination": {
+            "page": pagination.page,
+            "per_page": pagination.per_page,
+            "total": pagination.total,
+            "pages": pagination.pages,
+            "has_next": pagination.has_next,
+            "has_previous": pagination.has_prev
+        }
+    }), 200
 
 
 @job_bp.route("", methods=["POST"])
