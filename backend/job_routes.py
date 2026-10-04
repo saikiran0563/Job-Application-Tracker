@@ -21,7 +21,7 @@ def get_jobs():
 @job_bp.route("", methods=["POST"])
 def create_job():
     data = request.get_json(silent=True)
-    
+
     if not data:
         return jsonify({
             "error": "Request body must contain JSON data"
@@ -81,7 +81,12 @@ def update_job(job_id):
             "error": "Job application not found"
         }), 404
 
-    data = request.get_json()
+    data = request.get_json(silent=True)
+
+    if not data:
+        return jsonify({
+        "error": "Request body must contain JSON data"
+    }), 400
 
     job.company_name = data.get("company_name", job.company_name)
     job.job_title = data.get("job_title", job.job_title)
