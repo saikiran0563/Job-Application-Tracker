@@ -8,7 +8,14 @@ job_bp = Blueprint("job", __name__, url_prefix="/api/jobs")
 
 @job_bp.get("")
 def get_jobs():
-    jobs = JobApplication.query.order_by(
+    status = request.args.get("status")
+
+    query = JobApplication.query
+
+    if status:
+        query = query.filter_by(status=status)
+
+    jobs = query.order_by(
         JobApplication.application_date.desc()
     ).all()
 
