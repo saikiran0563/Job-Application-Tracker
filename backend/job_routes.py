@@ -9,11 +9,22 @@ job_bp = Blueprint("job", __name__, url_prefix="/api/jobs")
 @job_bp.get("")
 def get_jobs():
     status = request.args.get("status")
+    search = request.args.get("search")
 
     query = JobApplication.query
 
     if status:
         query = query.filter_by(status=status)
+
+    if search:
+        search_term = f"%{search}%"
+
+        query = query.filter(
+            db.or_(
+                JobApplication.company_name.ilike(search_term),
+                JobApplication.job_title.ilike(search_term)
+            )
+        )
 
     jobs = query.order_by(
         JobApplication.application_date.desc()
