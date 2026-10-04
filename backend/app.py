@@ -4,6 +4,7 @@ from config import Config
 from extensions import db, cors, jwt
 from models import JobApplication
 from job_routes import job_bp
+from analytics_routes import analytics_bp
 
 
 def create_app():
@@ -19,6 +20,7 @@ def create_app():
 
     # Register blueprints
     app.register_blueprint(job_bp)
+    app.register_blueprint(analytics_bp)
 
     # Create database tables
     with app.app_context():
