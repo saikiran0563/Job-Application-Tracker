@@ -11,6 +11,16 @@ function Dashboard() {
     const [search, setSearch] = useState("");
     const [status, setStatus] = useState("");
 
+    const [page, setPage] = useState(1);
+    const [pagination, setPagination] = useState({
+        page: 1,
+        pages: 0,
+        per_page: 10,
+        total: 0,
+        has_next: false,
+        has_previous: false,
+    });
+
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState("");
 
@@ -19,12 +29,16 @@ function Dashboard() {
     }, []);
 
     useEffect(() => {
+        setPage(1);
+    }, [search, status]);
+
+    useEffect(() => {
         const timer = setTimeout(() => {
             fetchDashboardData(false);
         }, 300);
 
         return () => clearTimeout(timer);
-    }, [search, status]);
+    }, [search, status, page]);
 
     const fetchDashboardData = async (showLoading = false) => {
         try {
@@ -34,7 +48,10 @@ function Dashboard() {
 
             setError("");
 
-            const params = {};
+            const params = {
+                page: page,
+                per_page: 10,
+            };
 
             if (search.trim()) {
                 params.search = search.trim();
@@ -50,6 +67,18 @@ function Dashboard() {
             ]);
 
             setJobs(jobsResponse.data.jobs || []);
+
+            setPagination(
+                jobsResponse.data.pagination || {
+                    page: 1,
+                    pages: 0,
+                    per_page: 10,
+                    total: 0,
+                    has_next: false,
+                    has_previous: false,
+                }
+            );
+
             setAnalytics(analyticsResponse.data);
         } catch (err) {
             console.error(err);
@@ -62,6 +91,7 @@ function Dashboard() {
     };
 
     const handleJobAdded = () => {
+        setPage(1);
         fetchDashboardData(false);
     };
 
@@ -77,6 +107,19 @@ function Dashboard() {
     const handleClearFilters = () => {
         setSearch("");
         setStatus("");
+        setPage(1);
+    };
+
+    const handlePreviousPage = () => {
+        if (pagination.has_previous) {
+            setPage((previousPage) => previousPage - 1);
+        }
+    };
+
+    const handleNextPage = () => {
+        if (pagination.has_next) {
+            setPage((previousPage) => previousPage + 1);
+        }
     };
 
     if (loading) {
@@ -162,6 +205,35 @@ function Dashboard() {
                 onJobDeleted={handleJobDeleted}
                 onJobEdit={setEditingJob}
             />
+
+            {pagination.pages > 0 && (
+                <div>
+                    <button
+                        type="button"
+                        onClick={handlePreviousPage}
+                        disabled={!pagination.has_previous}
+                    >
+                        Previous
+                    </button>
+
+                    <span>
+                        {" "}
+                        Page {pagination.page} of {pagination.pages}{" "}
+                    </span>
+
+                    <button
+                        type="button"
+                        onClick={handleNextPage}
+                        disabled={!pagination.has_next}
+                    >
+                        Next
+                    </button>
+
+                    <p>
+                        Showing {jobs.length} of {pagination.total} applications
+                    </p>
+                </div>
+            )}
         </div>
     );
 }
