@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import api from "../services/api";
 import AddJobForm from "../components/AddJobForm";
 import JobTable from "../components/JobTable";
+import "./Dashboard.css";
 
 function Dashboard() {
     const [editingJob, setEditingJob] = useState(null);
@@ -49,7 +50,7 @@ function Dashboard() {
             setError("");
 
             const params = {
-                page: page,
+                page,
                 per_page: 10,
             };
 
@@ -131,8 +132,13 @@ function Dashboard() {
     }
 
     return (
-        <div>
-            <h1>Job Application Tracker</h1>
+        <div className="dashboard">
+            <div className="dashboard-header">
+                <h1>Job Application Tracker</h1>
+                <p>
+                    Track and analyze your job applications in one place.
+                </p>
+            </div>
 
             <AddJobForm
                 onJobAdded={handleJobAdded}
@@ -143,97 +149,108 @@ function Dashboard() {
                 }}
             />
 
-            <div>
+            {analytics && (
+                <div className="analytics-grid">
+                    <div className="analytics-card">
+                        <h3>Total Applications</h3>
+                        <p className="analytics-value">
+                            {analytics.total_applications}
+                        </p>
+                    </div>
+
+                    <div className="analytics-card">
+                        <h3>Applied</h3>
+                        <p className="analytics-value">
+                            {analytics.applied}
+                        </p>
+                    </div>
+
+                    <div className="analytics-card">
+                        <h3>Interviews</h3>
+                        <p className="analytics-value">
+                            {analytics.interview}
+                        </p>
+                    </div>
+
+                    <div className="analytics-card">
+                        <h3>Selected</h3>
+                        <p className="analytics-value">
+                            {analytics.selected}
+                        </p>
+                    </div>
+                </div>
+            )}
+
+            <div className="filters-section">
                 <h2>Search & Filter</h2>
 
-                <input
-                    type="text"
-                    placeholder="Search company or job title..."
-                    value={search}
-                    onChange={(event) => setSearch(event.target.value)}
-                />
+                <div className="filters-row">
+                    <input
+                        className="search-input"
+                        type="text"
+                        placeholder="Search company or job title..."
+                        value={search}
+                        onChange={(event) => setSearch(event.target.value)}
+                    />
 
-                <select
-                    value={status}
-                    onChange={(event) => setStatus(event.target.value)}
-                >
-                    <option value="">All Statuses</option>
-                    <option value="Applied">Applied</option>
-                    <option value="Interview">Interview</option>
-                    <option value="Rejected">Rejected</option>
-                    <option value="Selected">Selected</option>
-                </select>
+                    <select
+                        className="status-filter"
+                        value={status}
+                        onChange={(event) => setStatus(event.target.value)}
+                    >
+                        <option value="">All Statuses</option>
+                        <option value="Applied">Applied</option>
+                        <option value="Interview">Interview</option>
+                        <option value="Rejected">Rejected</option>
+                        <option value="Selected">Selected</option>
+                    </select>
 
-                <button
-                    type="button"
-                    onClick={handleClearFilters}
-                >
-                    Clear Filters
-                </button>
+                    <button
+                        className="clear-button"
+                        type="button"
+                        onClick={handleClearFilters}
+                    >
+                        Clear Filters
+                    </button>
+                </div>
             </div>
 
-            {analytics && (
-                <div>
-                    <h2>Application Overview</h2>
+            <div className="jobs-section">
+                <JobTable
+                    jobs={jobs}
+                    onJobDeleted={handleJobDeleted}
+                    onJobEdit={setEditingJob}
+                />
 
-                    <p>
-                        Total Applications:{" "}
-                        {analytics.total_applications}
-                    </p>
+                {pagination.pages > 0 && (
+                    <div>
+                        <button
+                            type="button"
+                            onClick={handlePreviousPage}
+                            disabled={!pagination.has_previous}
+                        >
+                            Previous
+                        </button>
 
-                    <p>Applied: {analytics.applied}</p>
-                    <p>Interviews: {analytics.interview}</p>
-                    <p>Rejected: {analytics.rejected}</p>
-                    <p>Selected: {analytics.selected}</p>
+                        <span>
+                            {" "}
+                            Page {pagination.page} of {pagination.pages}{" "}
+                        </span>
 
-                    <p>
-                        Interview Rate: {analytics.interview_rate}%
-                    </p>
+                        <button
+                            type="button"
+                            onClick={handleNextPage}
+                            disabled={!pagination.has_next}
+                        >
+                            Next
+                        </button>
 
-                    <p>
-                        Rejection Rate: {analytics.rejection_rate}%
-                    </p>
-
-                    <p>
-                        Selection Rate: {analytics.selection_rate}%
-                    </p>
-                </div>
-            )}
-
-            <JobTable
-                jobs={jobs}
-                onJobDeleted={handleJobDeleted}
-                onJobEdit={setEditingJob}
-            />
-
-            {pagination.pages > 0 && (
-                <div>
-                    <button
-                        type="button"
-                        onClick={handlePreviousPage}
-                        disabled={!pagination.has_previous}
-                    >
-                        Previous
-                    </button>
-
-                    <span>
-                        {" "}
-                        Page {pagination.page} of {pagination.pages}{" "}
-                    </span>
-
-                    <button
-                        type="button"
-                        onClick={handleNextPage}
-                        disabled={!pagination.has_next}
-                    >
-                        Next
-                    </button>
-
-                    <p>
-                        Showing {jobs.length} of {pagination.total} applications
-                    </p>
-                </div>
-            )}
+                        <p>
+                            Showing {jobs.length} of {pagination.total} applications
+                        </p>
+                    </div>
+                )}
+            </div>
         </div>
     );
 }
