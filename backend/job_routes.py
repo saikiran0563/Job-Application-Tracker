@@ -1,36 +1,38 @@
-from flask import Blueprint, jsonify, request
 
-from models import JobApplication
+from flask import Blueprint, jsonify, request
+from flask_jwt_extended import get_jwt_identity, jwt_required
+
 from extensions import db
+from models import JobApplication
 
 job_bp = Blueprint("job", __name__, url_prefix="/api/jobs")
 
 
+def current_user_id():
+    return int(get_jwt_identity())
+
+
 @job_bp.get("")
+@jwt_required()
 def get_jobs():
+    user_id = current_user_id()
+
     status = request.args.get("status")
     search = request.args.get("search")
 
     page = request.args.get("page", 1, type=int)
     per_page = request.args.get("per_page", 10, type=int)
 
-    if page < 1:
-        page = 1
+    page = max(page, 1)
+    per_page = max(1, min(per_page, 100))
 
-    if per_page < 1:
-        per_page = 10
-
-    if per_page > 100:
-        per_page = 100
-
-    query = JobApplication.query
+    query = JobApplication.query.filter_by(user_id=user_id)
 
     if status:
         query = query.filter_by(status=status)
 
     if search:
         search_term = f"%{search}%"
-
         query = query.filter(
             db.or_(
                 JobApplication.company_name.ilike(search_term),
@@ -47,10 +49,7 @@ def get_jobs():
     )
 
     return jsonify({
-        "jobs": [
-            job.to_dict()
-            for job in pagination.items
-        ],
+        "jobs": [job.to_dict() for job in pagination.items],
         "pagination": {
             "page": pagination.page,
             "per_page": pagination.per_page,
@@ -62,11 +61,12 @@ def get_jobs():
     }), 200
 
 
-@job_bp.route("", methods=["POST"])
+@job_bp.post("")
+@jwt_required()
 def create_job():
     data = request.get_json(silent=True)
 
-    if not data:
+    if not isinstance(data, dict):
         return jsonify({
             "error": "Request body must contain JSON data"
         }), 400
@@ -85,6 +85,7 @@ def create_job():
             }), 400
 
     job = JobApplication(
+        user_id=current_user_id(),
         company_name=data["company_name"],
         job_title=data["job_title"],
         job_url=data.get("job_url"),
@@ -105,9 +106,14 @@ def create_job():
         "job": job.to_dict()
     }), 201
 
+
 @job_bp.get("/<int:job_id>")
+@jwt_required()
 def get_job(job_id):
-    job = JobApplication.query.get(job_id)
+    job = JobApplication.query.filter_by(
+        id=job_id,
+        user_id=current_user_id()
+    ).first()
 
     if not job:
         return jsonify({
@@ -116,9 +122,14 @@ def get_job(job_id):
 
     return jsonify(job.to_dict()), 200
 
+
 @job_bp.put("/<int:job_id>")
+@jwt_required()
 def update_job(job_id):
-    job = JobApplication.query.get(job_id)
+    job = JobApplication.query.filter_by(
+        id=job_id,
+        user_id=current_user_id()
+    ).first()
 
     if not job:
         return jsonify({
@@ -127,10 +138,10 @@ def update_job(job_id):
 
     data = request.get_json(silent=True)
 
-    if not data:
+    if not isinstance(data, dict):
         return jsonify({
-        "error": "Request body must contain JSON data"
-    }), 400
+            "error": "Request body must contain JSON data"
+        }), 400
 
     job.company_name = data.get("company_name", job.company_name)
     job.job_title = data.get("job_title", job.job_title)
@@ -139,8 +150,7 @@ def update_job(job_id):
     job.job_type = data.get("job_type", job.job_type)
     job.status = data.get("status", job.status)
     job.application_date = data.get(
-        "application_date",
-        job.application_date
+        "application_date", job.application_date
     )
     job.source = data.get("source", job.source)
     job.salary = data.get("salary", job.salary)
@@ -153,9 +163,14 @@ def update_job(job_id):
         "job": job.to_dict()
     }), 200
 
+
 @job_bp.delete("/<int:job_id>")
+@jwt_required()
 def delete_job(job_id):
-    job = JobApplication.query.get(job_id)
+    job = JobApplication.query.filter_by(
+        id=job_id,
+        user_id=current_user_id()
+    ).first()
 
     if not job:
         return jsonify({

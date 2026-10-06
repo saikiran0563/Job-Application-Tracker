@@ -2,20 +2,37 @@
 __pycache__/
 *.py[cod]
 *.pyo
+*.pyd
+.pytest_cache/
+.mypy_cache/
 
-# Virtual environments
+# Python virtual environments
 venv/
+.venv/
 backend/venv/
 
-# Environment variables
+# Environment variables and secrets
 .env
+.env.*
+!.env.example
 
-# VS Code
+# Frontend dependencies and build output
+node_modules/
+frontend/node_modules/
+dist/
+frontend/dist/
+
+# Test and coverage output
+.coverage
+htmlcov/
+
+# IDE and editor
 .vscode/
-
-# IDE
 .idea/
 
-# OS
+# Operating system
 .DS_Store
 Thumbs.db
+
+# Logs
+*.log

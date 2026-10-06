@@ -2,9 +2,9 @@ from flask import Flask, jsonify
 
 from config import Config
 from extensions import db, cors, jwt
-from models import JobApplication
 from job_routes import job_bp
 from analytics_routes import analytics_bp
+from auth_routes import auth_bp
 
 
 def create_app():
@@ -19,6 +19,7 @@ def create_app():
     jwt.init_app(app)
 
     # Register blueprints
+    app.register_blueprint(auth_bp)
     app.register_blueprint(job_bp)
     app.register_blueprint(analytics_bp)
 
