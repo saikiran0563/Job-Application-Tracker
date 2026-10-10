@@ -1,4 +1,4 @@
-import { lazy, Suspense, useEffect, useState } from "react";
+import { lazy, Suspense, useCallback, useEffect, useRef, useState } from "react";
 import api from "../services/api";
 import AddJobForm from "../components/AddJobForm";
 import JobTable from "../components/JobTable";
@@ -28,23 +28,9 @@ function Dashboard() {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState("");
 
-    useEffect(() => {
-        fetchDashboardData(true);
-    }, []);
+    const hasLoadedDashboard = useRef(false);
 
-    useEffect(() => {
-        setPage(1);
-    }, [search, status]);
-
-    useEffect(() => {
-        const timer = setTimeout(() => {
-            fetchDashboardData(false);
-        }, 300);
-
-        return () => clearTimeout(timer);
-    }, [search, status, page]);
-
-    const fetchDashboardData = async (showLoading = false) => {
+    const fetchDashboardData = useCallback(async (showLoading = false) => {
         try {
             if (showLoading) {
                 setLoading(true);
@@ -92,7 +78,17 @@ function Dashboard() {
                 setLoading(false);
             }
         }
-    };
+    }, [page, search, status]);
+
+    useEffect(() => {
+        const isInitialLoad = !hasLoadedDashboard.current;
+        const timer = setTimeout(() => {
+            hasLoadedDashboard.current = true;
+            fetchDashboardData(isInitialLoad);
+        }, isInitialLoad ? 0 : 300);
+
+        return () => clearTimeout(timer);
+    }, [fetchDashboardData]);
 
     const handleJobAdded = () => {
         setPage(1);
@@ -269,6 +265,7 @@ function Dashboard() {
                 </div>
 
                 <AddJobForm
+                    key={editingJob?.id ?? "new"}
                     onJobAdded={handleJobAdded}
                     editingJob={editingJob}
                     onJobUpdated={handleJobUpdated}
@@ -303,18 +300,20 @@ function Dashboard() {
                                 type="text"
                                 placeholder="Search company or job title..."
                                 value={search}
-                                onChange={(event) =>
-                                    setSearch(event.target.value)
-                                }
+                                onChange={(event) => {
+                                    setSearch(event.target.value);
+                                    setPage(1);
+                                }}
                             />
                         </div>
 
                         <select
                             className="status-filter"
                             value={status}
-                            onChange={(event) =>
-                                setStatus(event.target.value)
-                            }
+                            onChange={(event) => {
+                                setStatus(event.target.value);
+                                setPage(1);
+                            }}
                         >
                             <option value="">All Statuses</option>
                             <option value="Applied">Applied</option>
