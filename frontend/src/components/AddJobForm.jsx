@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import api from "../services/api";
 import "./AddJobForm.css";
 
@@ -15,37 +15,35 @@ const initialFormData = {
     notes: "",
 };
 
+function getFormData(job) {
+    if (!job) {
+        return initialFormData;
+    }
+
+    return {
+        company_name: job.company_name || "",
+        job_title: job.job_title || "",
+        job_url: job.job_url || "",
+        location: job.location || "",
+        job_type: job.job_type || "Full Time",
+        status: job.status || "Applied",
+        application_date: job.application_date || "",
+        source: job.source || "",
+        salary: job.salary || "",
+        notes: job.notes || "",
+    };
+}
+
 function AddJobForm({
     onJobAdded,
     editingJob,
     onJobUpdated,
     onCancelEdit,
 }) {
-    const [formData, setFormData] = useState(initialFormData);
+    const [formData, setFormData] = useState(() => getFormData(editingJob));
     const [message, setMessage] = useState("");
     const [error, setError] = useState("");
 
-    useEffect(() => {
-        if (editingJob) {
-            setFormData({
-                company_name: editingJob.company_name || "",
-                job_title: editingJob.job_title || "",
-                job_url: editingJob.job_url || "",
-                location: editingJob.location || "",
-                job_type: editingJob.job_type || "Full Time",
-                status: editingJob.status || "Applied",
-                application_date: editingJob.application_date || "",
-                source: editingJob.source || "",
-                salary: editingJob.salary || "",
-                notes: editingJob.notes || "",
-            });
-
-            setMessage("");
-            setError("");
-        } else {
-            setFormData(initialFormData);
-        }
-    }, [editingJob]);
 
     const handleChange = (event) => {
         const { name, value } = event.target;
