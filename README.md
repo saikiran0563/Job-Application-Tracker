@@ -155,6 +155,10 @@ Protected endpoints require a valid JWT access token. Job records are scoped to 
 - Use HTTPS, a production WSGI server, and production-grade configuration when deploying.
 - The built-in Flask development server is for local development only.
 
+## Deployment
+
+See [DEPLOYMENT.md](DEPLOYMENT.md) for production deployment preparation and environment-variable guidance.
+
 ## Project Status
 
-Authentication, application management, search, status filters, pagination, and analytics charts have been implemented. Frontend production build and Python dependency checks previously passed. Regression testing and deployment preparation remain ongoing.
+Authentication, application management, search, status filters, pagination, and analytics charts have been implemented. Frontend lint, production build, and backend syntax checks pass in GitHub Actions. Core login, dashboard, search, filtering, and application CRUD checks have also passed locally.
