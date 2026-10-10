@@ -1,3 +1,5 @@
+import os
+
 from flask import Flask, jsonify
 
 from config import Config
@@ -42,4 +44,9 @@ app = create_app()
 
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    debug_enabled = os.getenv("FLASK_DEBUG", "").strip().lower() in {
+        "1",
+        "true",
+        "yes",
+    }
+    app.run(debug=debug_enabled)
