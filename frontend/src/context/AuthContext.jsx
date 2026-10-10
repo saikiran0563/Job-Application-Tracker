@@ -1,25 +1,48 @@
-
-import { createContext, useContext, useState } from "react";
+import { createContext, useContext, useEffect, useState } from "react";
 import api from "../services/api";
 
 const AuthContext = createContext(null);
 
-export function AuthProvider({ children }) {
-  const [user, setUser] = useState(() => {
+function readSavedUser() {
+  try {
     const savedUser = localStorage.getItem("user");
     return savedUser ? JSON.parse(savedUser) : null;
-  });
+  } catch {
+    localStorage.removeItem("user");
+    localStorage.removeItem("access_token");
+    return null;
+  }
+}
 
+export function AuthProvider({ children }) {
+  const [user, setUser] = useState(readSavedUser);
   const [loading, setLoading] = useState(false);
 
-  async function register(name, email, password) {
-    const response = await api.post("/auth/register", {
-      name,
-      email,
-      password,
-    });
+  useEffect(() => {
+    function handleUnauthorized() {
+      setUser(null);
+    }
 
-    return response.data;
+    window.addEventListener("auth:unauthorized", handleUnauthorized);
+    return () => {
+      window.removeEventListener("auth:unauthorized", handleUnauthorized);
+    };
+  }, []);
+
+  async function register(name, email, password) {
+    setLoading(true);
+
+    try {
+      const response = await api.post("/auth/register", {
+        name,
+        email,
+        password,
+      });
+
+      return response.data;
+    } finally {
+      setLoading(false);
+    }
   }
 
   async function login(email, password) {
@@ -36,7 +59,6 @@ export function AuthProvider({ children }) {
 
       localStorage.setItem("access_token", token);
       localStorage.setItem("user", JSON.stringify(loggedInUser));
-
       setUser(loggedInUser);
 
       return loggedInUser;
