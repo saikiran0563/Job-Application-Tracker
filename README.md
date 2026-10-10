@@ -51,6 +51,7 @@ Job Application Tracker/
 │   └── .env.example
 ├── frontend/
 │   ├── src/
+│   ├── .env.example
 │   ├── package.json
 │   └── vite.config.js
 ├── .gitignore
@@ -100,6 +101,8 @@ python -c "import secrets; print(secrets.token_hex(32))"
 
 Copy the generated value into `JWT_SECRET_KEY` in `backend/.env`. Do not commit this file or share the secret. The backend intentionally refuses to start if the JWT secret is missing or still set to the example placeholder.
 
+`CORS_ORIGINS` is a comma-separated list of allowed frontend origins. Its default allows the local Vite origins `http://localhost:5173` and `http://127.0.0.1:5173`. When deploying, replace these with the exact frontend origin(s) you control.
+
 ### 4. Start the backend
 
 Keep the terminal in the `backend` directory with the virtual environment activated:
@@ -108,7 +111,7 @@ Keep the terminal in the `backend` directory with the virtual environment activa
 python app.py
 ```
 
-The API runs at `http://127.0.0.1:5000`. The health endpoint is `http://127.0.0.1:5000/api/health`.
+The API runs at `http://127.0.0.1:5000`. The health endpoint is `http://127.0.0.1:5000/api/health`. Flask debug mode is disabled by default; set `FLASK_DEBUG=true` in `backend/.env` only when debugging locally.
 
 ### 5. Start the frontend
 
@@ -116,9 +119,12 @@ Open a second terminal at the project root:
 
 ```powershell
 cd frontend
+Copy-Item .env.example .env
 npm install
 npm run dev
 ```
+
+The frontend reads its API base URL from `VITE_API_BASE_URL` in `frontend/.env`. The example points to the local backend at `http://127.0.0.1:5000/api`. Vite reads environment variables at startup, so restart the dev server after changing this file. For deployment, set this variable to the deployed API URL.
 
 Open the local URL printed by Vite, typically `http://localhost:5173`.
 
@@ -145,7 +151,8 @@ Protected endpoints require a valid JWT access token. Job records are scoped to 
 - Use a unique, strong JWT secret and keep it private.
 - The backend loads `backend/.env` using an explicit file path, regardless of the terminal's current directory.
 - Database credentials are assembled with SQLAlchemy's URL helper to support special characters safely.
-- Use HTTPS, a production WSGI server, restricted CORS origins, and production-grade configuration when deploying.
+- CORS is limited to the origins configured in `CORS_ORIGINS`.
+- Use HTTPS, a production WSGI server, and production-grade configuration when deploying.
 - The built-in Flask development server is for local development only.
 
 ## Project Status
