@@ -1,10 +1,10 @@
-import { useEffect, useState } from "react";
+import { lazy, Suspense, useEffect, useState } from "react";
 import api from "../services/api";
 import AddJobForm from "../components/AddJobForm";
 import JobTable from "../components/JobTable";
 import "./Dashboard.css";
-import ApplicationStatusChart from "../components/ApplicationStatusChart";
-import MonthlyApplicationsChart from "../components/MonthlyApplicationsChart";
+const ApplicationStatusChart = lazy(() => import("../components/ApplicationStatusChart"));
+const MonthlyApplicationsChart = lazy(() => import("../components/MonthlyApplicationsChart"));
 
 function Dashboard() {
     const [editingJob, setEditingJob] = useState(null);
@@ -460,10 +460,18 @@ function Dashboard() {
                     </div>
                 )}
                     {analytics && (
-                        <div className="analytics-charts-grid">
-                            <ApplicationStatusChart analytics={analytics} />
-                            <MonthlyApplicationsChart analytics={analytics} />
-                        </div>
+                        <Suspense
+                            fallback={
+                                <div className="analytics-charts-grid" aria-live="polite">
+                                    <p>Loading analytics charts...</p>
+                                </div>
+                            }
+                        >
+                            <div className="analytics-charts-grid">
+                                <ApplicationStatusChart analytics={analytics} />
+                                <MonthlyApplicationsChart analytics={analytics} />
+                            </div>
+                        </Suspense>
                     )}
             </section>
 
