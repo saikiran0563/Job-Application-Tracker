@@ -1,4 +1,4 @@
-import "./Auth.css";
+import "./auth.css";
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
@@ -8,7 +8,6 @@ function Register() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
-  const [success, setSuccess] = useState("");
 
   const { register, loading } = useAuth();
   const navigate = useNavigate();
@@ -16,12 +15,9 @@ function Register() {
   async function handleSubmit(event) {
     event.preventDefault();
     setError("");
-    setSuccess("");
 
     try {
       await register(name, email, password);
-
-      setSuccess("Registration successful. Redirecting to login...");
 
       navigate("/login", {
         replace: true,
@@ -42,7 +38,6 @@ function Register() {
         <p>Start tracking your job applications.</p>
 
         {error && <p className="auth-error">{error}</p>}
-        {success && <p role="status">{success}</p>}
 
         <label htmlFor="name">Full name</label>
         <input
