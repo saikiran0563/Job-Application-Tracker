@@ -6,8 +6,8 @@ This guide prepares Job Application Tracker for a typical split deployment: a Py
 
 - Confirm the application works locally and the latest GitHub Actions run is green.
 - Choose a managed MySQL provider that supports remote connections from your backend host. The app currently uses MySQL; a PostgreSQL-only database will not work without changing the database driver and code.
-- Back up your local database before any production data import. Do not import test records.
-- Keep all secrets in the hosting provider's environment-variable settings, not in Git.
+- Keep your current local database and local `backend/.env` unchanged. Start with a separate, empty production database.
+- Keep all passwords and application secrets out of Git.
 
 ## 1. Deploy the Flask API
 
@@ -23,17 +23,20 @@ Set these environment variables in the backend service:
 | Variable | Value |
 |---|---|
 | `DB_HOST` | Hostname supplied by your managed MySQL provider |
-| `DB_PORT` | Provider's MySQL port, usually `3306` |
+| `DB_PORT` | Provider's MySQL port |
 | `DB_USER` | Database username |
 | `DB_PASSWORD` | Database password |
 | `DB_NAME` | Production database name |
+| `DB_SSL_CA` | Path to the provider's downloaded CA certificate file |
 | `JWT_SECRET_KEY` | A unique secret generated with `python -c "import secrets; print(secrets.token_hex(32))"` |
 | `CORS_ORIGINS` | Exact deployed frontend origin, e.g. `https://your-app.example` |
 | `FLASK_DEBUG` | `false` |
 
-Use the database provider's required TLS settings and network allowlist. Do not expose the MySQL server to the entire internet if the provider offers narrower access controls.
+For Aiven, download the CA certificate from the service's Overview / Connection information section. On a host that supports secret files, upload it as a private secret file and set `DB_SSL_CA` to the mounted file path (for example, Render secret files are commonly mounted under `/etc/secrets/`). Do not commit the CA file to the repository. The application config requires this CA path for remote MySQL and enables certificate/hostname verification.
 
-The app currently calls `db.create_all()` at startup. This creates missing tables but is not a schema-migration system. If you already have data, deploy against a fresh production database first or take a verified backup before connecting an existing database.
+Restrict database network access to the backend host where the provider supports it. Do not expose the MySQL service more broadly than necessary.
+
+The app calls `db.create_all()` at startup. This creates missing tables but is not a schema-migration system. Because this is a fresh production database, the app can create its tables there. Do not point it at your existing local database or import local records during initial deployment.
 
 ## 2. Deploy the React frontend
 
@@ -62,6 +65,6 @@ Replace the example with the actual backend URL, then redeploy the frontend. Vit
 
 ## Important limitations
 
-- No hosting provider, production database, domain, or production secrets are configured by this guide.
+- No hosting provider, production database connection, domain, or production secrets are configured by this guide.
 - Do not use local development credentials or the example JWT placeholder in production.
 - Do not upload or import personal job-application data until the production database, access controls, backups, and privacy settings are verified.
