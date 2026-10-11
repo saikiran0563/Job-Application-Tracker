@@ -9,6 +9,20 @@ A full-stack web application for tracking job applications, monitoring applicati
 
 Register a new account to try the application. The health-check endpoint verifies that the API is running.
 
+## Screenshots
+
+### Dashboard
+![JobTrack dashboard overview](docs/screenshots/Screenshot%202026-10-11%20204635.png)
+
+### Add Job Application
+![Add job application form](docs/screenshots/Screenshot%202026-10-11%20204825.png)
+
+### Search and Filter Applications
+![Application search and filter controls](docs/screenshots/Screenshot%202026-10-11%20204911.png)
+
+### Application Analytics
+![Application analytics cards and charts](docs/screenshots/Screenshot%202026-10-11%20204941.png)
+
 ## Features
 
 - User registration and login using JWT authentication
@@ -61,6 +75,8 @@ Job Application Tracker/
 │   ├── .env.example
 │   ├── package.json
 │   └── vite.config.js
+├── docs/
+│   └── screenshots/
 ├── .gitignore
 └── README.md
 ```
