@@ -2,6 +2,13 @@
 
 A full-stack web application for tracking job applications, monitoring application statuses, and visualizing job-search progress.
 
+## Live Demo
+
+- **Frontend:** https://job-application-tracker-u4ga.onrender.com
+- **Backend health check:** https://job-application-tracker-api-4i76.onrender.com/api/health
+
+Register a new account to try the application. The health-check endpoint verifies that the API is running.
+
 ## Features
 
 - User registration and login using JWT authentication
@@ -161,4 +168,4 @@ See [DEPLOYMENT.md](DEPLOYMENT.md) for production deployment preparation and env
 
 ## Project Status
 
-Authentication, application management, search, status filters, pagination, and analytics charts have been implemented. Frontend lint, production build, and backend syntax checks pass in GitHub Actions. Core login, dashboard, search, filtering, and application CRUD checks have also passed locally.
+Deployed on Render. Authentication, application management, search, status filters, pagination, and analytics charts have been implemented. Frontend lint, production build, and backend syntax checks pass in GitHub Actions. Core login, dashboard, search, filtering, and application CRUD checks have also passed locally and the user has confirmed the live application works.
