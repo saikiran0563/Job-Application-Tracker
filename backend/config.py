@@ -16,6 +16,15 @@ class Config:
     DB_USER = os.getenv("DB_USER", "root")
     DB_PASSWORD = os.getenv("DB_PASSWORD", "")
     DB_NAME = os.getenv("DB_NAME", "job_tracker")
+    DB_SSL_CA = os.getenv("DB_SSL_CA", "").strip()
+
+    # Require a CA certificate for remote MySQL connections so TLS can verify
+    # the server certificate. Local development can continue using localhost.
+    if DB_HOST.lower() not in {"localhost", "127.0.0.1", "::1"} and not DB_SSL_CA:
+        raise RuntimeError(
+            "Set DB_SSL_CA to the path of your MySQL provider's CA certificate "
+            "for remote database connections."
+        )
 
     # URL.create safely handles special characters in database credentials.
     SQLALCHEMY_DATABASE_URI = URL.create(
@@ -25,6 +34,20 @@ class Config:
         host=DB_HOST,
         port=DB_PORT,
         database=DB_NAME,
+    )
+
+    # PyMySQL uses this CA file to encrypt and verify remote MySQL connections.
+    SQLALCHEMY_ENGINE_OPTIONS = (
+        {
+            "connect_args": {
+                "ssl": {
+                    "ca": DB_SSL_CA,
+                    "check_hostname": True,
+                }
+            }
+        }
+        if DB_SSL_CA
+        else {}
     )
 
     CORS_ORIGINS = [
